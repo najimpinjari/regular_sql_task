@@ -1,0 +1,8 @@
+use ADODOTNET
+
+CREATE PROCEDURE GetAllProducts
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT * FROM products;
+END;
