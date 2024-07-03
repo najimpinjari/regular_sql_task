@@ -26,94 +26,6 @@ INSERT INTO NewEmployee (id, name, gender, salary, city) VALUES
 
 select * from NewEmployee
 
-	select * from NewEmployee order by gender
-
-	select count(id) from NewEmployee
-
-	select max(salary) as max_salary from NewEmployee 
-
-	select min(salary) as min_salary from NewEmployee
-
-	select avg(salary) as avg_salary from NewEmployee 
-
-	select sum(salary)  as total_salary from NewEmployee 
-
-	select city from NewEmployee where name = 'Alice Johnson'
-
-	select city from NewEmployee group by gender
-
-	select city , count(*) as total_num
-	from NewEmployee 
-	group by city
-
-	select city, sum(salary) as total_expenditure
-	from NewEmployee 
-	group by city
-	order by  total_expenditure
-
-	select gender ,avg(salary) as avg_salary
-	from NewEmployee 
-	group by gender 
-
-	select gender , count(*) as total_count_gender_vise
-	from NewEmployee 
-	group by gender
-
-	select  gender , max(salary) as max_salary
-	from NewEmployee 
-	group by gender
-
-	--Q: Which cities have a total salary expenditure greater than $75,000?
-
-	select city , max(salary) as totol_slary
-	from NewEmployee  
-	group by city
-	having max(salary) > 75000
-
-	--Q: Which genders have an average salary greater than $75,000?
-
-	select gender , avg(salary)
-	from NewEmployee  
-	group by gender 
-	having avg(salary) > 75000;
-
-	--Retrieve the details of employees whose salaries are above the average salary of all employees.
-
-select * 
-from NewEmployee 
-where salary > (select avg(salary) from NewEmployee)
-
-
---Retrieve the details of employees who earn more than the maximum salary in the 'San Jose' city.
-
-select * 
-from NewEmployee 
-where salary > (select max(salary)from NewEmployee where city = 'San Jose' )
-
---List the names of employees who live in cities where the total salary expenditure is less than $150,000.
-
-select name 
-from NewEmployee 
-where city in (select city from NewEmployee group by city having sum(salary) < 150000)
-
---Find the details of employees who have the highest salary in their respective cities.
-
-select * city, salary 
-from NewEmployee 
-where in (select city , max(salary) from NewEmployee group by city )
-
-select SCOPE_IDENTITY()
-
-select 
-	name ,
-	gender ,
-	case
-		when gender = 'M' then 'male'
-		when gender = 'F' then 'female'
-		else 'other '
-	end as gender_full
-from NewEmployee
-
 -- Create the EmployeeDepartment table
 CREATE TABLE EmployeeDepartment (
     id INT PRIMARY KEY,
@@ -139,66 +51,239 @@ INSERT INTO EmployeeDepartment (id, employee_id, department_name) VALUES
 select * from NewEmployee 
 select * from EmployeeDepartment
 
---Returns rows when there is a match in both tables.
+select upper(department_name) from EmployeeDepartment 
+select lower(department_name) from EmployeeDepartment 
+select len(department_name) from EmployeeDepartment 
+select substring(department_name , 1,4) from EmployeeDepartment
+select concat(department_name , id ) from EmployeeDepartment 
+select replace(department_name , 'IT', 'Information Technology ') from EmployeeDepartment 
 
-select n.id , n.name , n.salary , e.department_name 
-from NewEmployee n 
-inner join EmployeeDepartment e
-on n.id = e.employee_id 
 
---Returns all rows from the left table (NewEmployee), and the matched rows from the
---right table (EmployeeDepartment). Returns null on the right side when there is no match.
+SELECT REPLACE(department_name, 'IT', 'IT department') FROM EmployeeDepartment;
+SELECT  PATINDEX('%new%', department_name) FROM EmployeeDepartment; 
+SELECT LEFT(department_name, 1) FROM EmployeeDepartment ; 
+SELECT REVERSE(department_name) FROM EmployeeDepartment; 
 
-select n.id , n.name , n.salary , e.department_name 
-from NewEmployee n 
-left join EmployeeDepartment  e 
-on n.id = e.employee_id 
+ SELECT STUFF(department_name, 2, 2, '***') FROM EmployeeDepartment; 
 
--- Basic Right Join
-SELECT ne.id, ne.name, ed.department_name
-FROM NewEmployee ne
-RIGHT JOIN EmployeeDepartment ed 
-ON ne.id = ed.employee_id;
+ SELECT CHARINDEX('IT', department_name) FROM EmployeeDepartment;
 
---Returns the Cartesian product of the two tables, i.e., all possible combinations of rows.
+select Getdate()  
+select Current_timestamp
+select Sysdatetime()
+select SysDateTimeOffset()
+select GetUTCDate()
+select SysUTCDateTime()
 
-select n.name as new_name , e.department_name as new_dep 
-from NewEmployee n 
-cross join EmployeeDepartment e
 
---Returns all rows when there is a match in either table. If there is no match, 
---the result is null on the side that lacks a match.
+CREATE FUNCTION GetFullNameById (@employee_id INT)
+RETURNS VARCHAR(100)
+as 
+begin 
+	declare @full_name varchar(100)
 
-select n.name , n.city , n.gender , e.department_name , e.employee_id 
-from NewEmployee  n 
-full outer join EmployeeDepartment e 
-on e.id  = n.id 
-	
+	select @full_name= name 
+	from NewEmployee 
+	where id = @employee_id 
 
-select id,name , isnull(gender , 'not Specify') as no_gender  
-from NewEmployee 
+	return @full_name
+end
 
-select id, name , coalesce(salary ,0 ) as salary
-from NewEmployee 
+select dbo.GetFullNameById(4)
 
-	create proc EmpGender 
-	@gender_name varchar(50)
-	as 
+CREATE FUNCTION function_name (parameters) 
+RETURNS data_type 
+AS						<= Syntax
+BEGIN –
+ Function logic 
+	RETURN result;
+END
+
+
+CREATE FUNCTION GET_GENDER_BY_ID (@id int)
+returns varchar(10)
+as 
 	begin 
-		select * from NewEmployee where gender = @gender_name
+		declare @gender varchar(10)
+		select @gender = gender 
+		from NewEmployee
+		where @id = id 
+			return @gender
 	end
+	select dbo.GET_GENDER_BY_ID(3)--f
 
-	execute EmpGender  'm'
+drop function GET_GENDER_BY_ID
 
-	-- Create a stored procedure with parameters to get employees by city
-CREATE PROCEDURE GetEmployeesByCity
-    @city VARCHAR(100)
+
+create function get_city_by_id (@id int)
+returns table 
+as 
+return (
+		select id, name , city
+		from NewEmployee
+		where id = @id 
+);
+select * 
+from dbo.get_city_by_id(2)
+
+drop function  GetFullNameById
+-- Declare a variable to store the result
+DECLARE @full_name VARCHAR(100);
+
+-- Call the scalar function to get the full name for employee ID 3
+SET @full_name = dbo.GetFullNameById(3); -- Assuming dbo is the schema where the function is created
+
+-- Output the full name
+SELECT @full_name AS FullName;
+
+-- Retrieve full name for employee ID 3 using the function in a SELECT statement
+SELECT dbo.GetFullNameById() 
+
+
+
+
+CREATE FUNCTION function_name (parameters) 
+RETURNS data_type 
+AS
+BEGIN -- Function logic 
+	RETURN result;
+END
+
+
+CREATE FUNCTION GetEmployeeInfoById (@employee_id INT)
+RETURNS TABLE
+AS
+RETURN (
+    SELECT name, salary
+    FROM NewEmployee
+    WHERE id = @employee_id
+);
+
+exec dbo.GetEmployeeInfoById(3)
+
+-- Create a table-valued function to retrieve employees by city
+CREATE FUNCTION GetEmployeesByCity (@city_name VARCHAR(100))
+RETURNS TABLE
+AS RETURN (
+    SELECT id, name, gender, salary
+    FROM NewEmployee
+    WHERE city = @city_name
+);
+
+-- Create a table-valued function to retrieve employees by city
+CREATE FUNCTION GetEmployeesBy_city (@city_name VARCHAR(233))
+RETURNS TABLE
+AS
+RETURN (
+    SELECT id, name, gender, salary
+    FROM NewEmployee
+    WHERE city = @city_name
+);
+
+
+SELECT id, name, gender, salary
+FROM dbo.GetEmployeesBy_city('New York')
+FROM dbo.GetEmployeesBy_city('it'),
+FROM dbo.GetEmployeesBy_city('New York'); 
+
+
+DROP proc dbo.GetEmployeesByCity;
+-- Example: Delete the GetEmployeesByCity function
+DROP FUNCTION dbo.GetEmployeesByCity;
+
+
+select * from inserted -- errorselect * from NewEmployeelimit = 5;SELECT TOP 5 *
+FROM NewEmployee;
+
+CREATE TABLE EmployeeAuditLog (
+    LogID INT IDENTITY(1,1) PRIMARY KEY,
+    Action VARCHAR(50),
+    EmployeeID INT,
+    EmployeeName VARCHAR(100),
+    Gender CHAR(1),
+    Salary DECIMAL(10, 2),
+    City VARCHAR(100),
+    ActionDate DATETIME DEFAULT GETDATE()
+);
+
+
+CREATE TRIGGER trgEmployeeInsert
+ON NewEmployee
+AFTER INSERT
 AS
 BEGIN
-    SELECT * FROM NewEmployee WHERE city = @city;
+    INSERT INTO EmployeeAuditLog (Action, EmployeeID, EmployeeName, Gender, Salary, City)
+    SELECT 
+        'INSERT' AS Action,
+        id AS EmployeeID,
+        name AS EmployeeName,
+        gender AS Gender,
+        salary AS Salary,
+        city AS City
+    FROM 
+        inserted;
 END;
 
 
-execute GetEmployeesByCity 'New York'
+INSERT INTO NewEmployee (id, name, gender, salary, city)
+VALUES (11, 'Kate Brown', 'F', 79000.00, 'Boston');
 
-select * from NewEmployee 
+delete from NewEmployee where id = 11
+
+
+select * from newemployee
+select * from EmployeeAuditLog
+
+
+BEGIN TRANSACTION;
+
+-- Update salaries by increasing them by 5%
+UPDATE NewEmployee
+SET salary = salary * 1.05;
+
+-- Insert into SalaryChangeLog to log the salary change
+INSERT INTO SalaryChangeLog (EmployeeID, OldSalary, NewSalary, ChangeDate)
+SELECT id, salary / 1.05, salary, GETDATE()
+FROM NewEmployee;
+ROLLBACK TRANSACTION
+
+COMMIT TRANSACTION;
+
+
+Read committed 
+
+SELECT 
+    ROW_NUMBER() OVER (ORDER BY salary DESC) AS RowNum,
+    name, salary
+FROM NewEmployee;
+
+WITH RankedEmployees AS (
+    SELECT 
+        name, 
+        salary,
+        DENSE_RANK() OVER (ORDER BY salary DESC) AS SalaryRank
+    FROM NewEmployee
+)
+SELECT name, salary
+FROM RankedEmployees
+WHERE SalaryRank = 3;
+
+
+WITH RankedEmployees AS (
+    SELECT 
+        name, 
+        salary,
+        DENSE_RANK() OVER (ORDER BY salary DESC) AS SalaryRank
+    FROM NewEmployee
+)
+SELECT name, salary
+FROM RankedEmployees
+WHERE SalaryRank = 2;
+
+SELECT MAX(salary) AS MaxSalary
+FROM NewEmployee;
+
+
+select name , salary , city 
+	from NewEmployee 
+	where id = 1 
