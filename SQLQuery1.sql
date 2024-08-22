@@ -1,19 +1,41 @@
-use ADODOTNET
+use [sqlrevision]
 
-	select * from Trainer
+select * from NewStaf
 
-insert into Trainer value ('atul', 'pune', 2)
 
-create proc uspInsertTrainer
-@Name varchar(50) ,@city varchar(50), @Experience int 
+create procedure SPfind 
 as 
-begin
-	insert into Trainer value (@Name , @city , @Experience)
-	return scope_identity()
-end
+begin	
+	select * from newstaf
+end 
 
-execute uspInsertTrainer @Name = 'atul' , @city = 'pune',@Experience = 3  
+	
+execute SPfind
 
-select count(Id) from Trainer
+create proc SPfindbygender 
+@gender_name varchar(50)
+as 
+begin 
+	select	* from NewStaf where gender	= @gender_name
+end 
 
-	select * from Trainer
+execute SPfindbygender 'male'
+
+with ctd_delete as (
+	select salary ,
+		DENSE_RANK() over (order by salary desc ) as thired_salray 
+		from NewStaf
+)
+select salary	
+from ctd_delete 
+where thired_salray = 2
+
+with ctd_duplicate as(
+	select name ,
+		ROW_NUMBER() over (partition by name order by name ) as duplicated_delete
+		from NewStaf
+)
+delete from ctd_duplicate
+where duplicated_delete > 1
+
+
